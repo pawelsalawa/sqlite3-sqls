@@ -1,5 +1,5 @@
 env:
-    SQLITE_PAGE=https://sqlite.org
+    SQLITE_PAGE: https://sqlite.org
  
 name: Generate Amalgamation
 
