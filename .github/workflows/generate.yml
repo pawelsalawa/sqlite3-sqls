@@ -3,9 +3,9 @@ env:
  
 name: Generate Amalgamation
 
-on:
-    workflow_dispatch:
-    schedule:
+#on:
+#    workflow_dispatch:
+#    schedule:
 #        - cron: '30 3 * * 1' # run at 3:30 AM UTC every Monday
  
 jobs:
