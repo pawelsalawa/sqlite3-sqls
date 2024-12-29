@@ -1,0 +1,37 @@
+env:
+    SQLITE_PAGE=https://sqlite.org
+ 
+name: Generate Amalgamation
+
+on:
+    workflow_dispatch:
+    schedule:
+#        - cron: '30 3 * * 1' # run at 3:30 AM UTC every Monday
+ 
+jobs:
+    build:
+        runs-on: ubuntu-20.04
+
+        steps:
+            - name: Check latest version
+              shell: bash
+              run: |
+                curl -s https://sqlite.org/download.html > download.html
+                URL=${{ env.SQLITE_PAGE }}/$(cat download.html | grep -o '[0-9]\/sqlite-src-[0-9]*\.zip' | head -1)
+                INT_VER=$(cat download.html | grep -o '[0-9]\/sqlite-src-[0-9]*\.zip' | head -1 | grep -o '[0-9]*')
+                
+                NUM0=${VER:1}
+                NUM1=${VER:0:2}
+                NUM2=${VER:2:2}
+                NUM3=${VER:4:2}
+                NUM1=$((10#$NUM1))
+                NUM2=$((10#$NUM2))
+                NUM3=$((10#$NUM3))
+                VERSION="$NUM0-$NUM1-$NUM-2"
+                if [ $NUM3 -ne 0 ]; then
+                    VERSION="$VERSION-$NUM3"
+                fi
+
+                echo "Version INT: $INT_VER"
+                echo "Version: $VERSION"
+                echo "URL: $URL"
