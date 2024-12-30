@@ -64,6 +64,9 @@ jobs:
                 ./configure --enable-fts3 --enable-all --enable-update-limit --disable-tcl
                 make amalgamation-tarball
                 
+                mkdir ${{ env.OUTPUT_DIR }}
+                cp ${{ env.$OUTPUT_FILES }} ${{ env.OUTPUT_DIR }}/
+                
             - name: Upload artifact
               uses: actions/upload-artifact@v4
               with:
