@@ -20,8 +20,8 @@ jobs:
               run: |
                 curl -s https://sqlite.org/download.html > download.html
                 SQLITE_SRC_ZIP=$(cat download.html | grep -o 'sqlite-src-[0-9]*\.zip' | head -1)
-                SQLITE_URL=${{ env.SQLITE_PAGE }}/$SQLITE_SRC_ZIP
-                INT_VER=$(cat download.html | grep -o 'sqlite-src-[0-9]*\.zip' | head -1 | grep -o '[0-9]*')
+                SQLITE_URL=${{ env.SQLITE_PAGE }}/$(cat download.html | grep -o '[0-9]*\/sqlite-src-[0-9]*\.zip' | head -1)
+                INT_VER=$(echo $SQLITE_SRC_ZIP | grep -o '[0-9]*')
                 OUTPUT_DIR=sqlite-amalgamation-$INT_VER
                 
                 NUM0=${INT_VER:0:1}
