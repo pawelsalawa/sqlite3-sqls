@@ -68,5 +68,5 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                 name: ${{ env.OUTPUT_DIR }}
-                path: ${{ env.$SRC_DIR }}/${{ env.OUTPUT_DIR }}
+                path: ${{ env.SRC_DIR }}/${{ env.OUTPUT_DIR }}
                 
