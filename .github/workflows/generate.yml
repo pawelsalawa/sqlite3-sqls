@@ -55,7 +55,7 @@ jobs:
               shell: bash
               run: |
                 set -x
-                curl -L ${{ env.SQLITE_URL }} -o ${{ env.SQLITE_SRC_ZIP }}
+                wget -o ${{ env.SQLITE_SRC_ZIP }} ${{ env.SQLITE_URL }}
                 unzip ${{ env.SQLITE_SRC_ZIP }}
                 SRC_DIR=$(grep -o 'sqlite-src-[0-9]*')
                 echo "SRC_DIR=$SRC_DIR" >> $GITHUB_ENV
