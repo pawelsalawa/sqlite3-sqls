@@ -1,5 +1,6 @@
 env:
     SQLITE_PAGE: https://sqlite.org
+    OUTPUT_FILES: sqlite3.c sqlite3.h sqlite3ext.h shell.c
  
 name: Generate Amalgamation
 
@@ -18,8 +19,10 @@ jobs:
               shell: bash
               run: |
                 curl -s https://sqlite.org/download.html > download.html
-                URL=${{ env.SQLITE_PAGE }}/$(cat download.html | grep -o '[0-9]*\/sqlite-src-[0-9]*\.zip' | head -1)
+                SQLITE_URL=${{ env.SQLITE_PAGE }}/$(cat download.html | grep -o '[0-9]*\/sqlite-src-[0-9]*\.zip' | head -1)
+                SQLITE_SRC_ZIP=${{ env.SQLITE_PAGE }}/$(cat download.html | grep -o '[0-9]*\/sqlite-src-[0-9]*\.zip' | head -1)
                 INT_VER=$(cat download.html | grep -o 'sqlite-src-[0-9]*\.zip' | head -1 | grep -o '[0-9]*')
+                OUTPUT_DIR=sqlite-amalgamation-$INT_VER
                 
                 NUM0=${INT_VER:0:1}
                 NUM1=${INT_VER:1:2}
@@ -28,11 +31,42 @@ jobs:
                 NUM1=$((10#$NUM1))
                 NUM2=$((10#$NUM2))
                 NUM3=$((10#$NUM3))
-                VERSION="$NUM0.$NUM1.$NUM2"
+                SQLITE_VERSION="$NUM0.$NUM1.$NUM2"
                 if [ $NUM3 -ne 0 ]; then
-                    VERSION="$VERSION.$NUM3"
+                    SQLITE_VERSION="$SQLITE_VERSION.$NUM3"
                 fi
 
                 echo "Version INT: $INT_VER"
-                echo "Version: $VERSION"
-                echo "URL: $URL"
+                echo "Version: $SQLITE_VERSION"
+                echo "URL: $SQLITE_URL"
+                
+                echo "SQLITE_VERSION=$SQLITE_VERSION" >> $GITHUB_ENV
+                echo "INT_VER=$INT_VER" >> $GITHUB_ENV
+                echo "SQLITE_URL=$SQLITE_URL" >> $GITHUB_ENV
+                echo "SQLITE_SRC_ZIP=$SQLITE_SRC_ZIP" >> $GITHUB_ENV
+                echo "OUTPUT_DIR=$OUTPUT_DIR" >> $GITHUB_ENV
+
+            - name: Install prerequisities
+              shell: bash
+              run: |
+                sudo apt install autoconf automake libtool
+
+            - name: Build Amalgamation
+              shell: bash
+              run: |
+                set -x
+                curl -L ${{ env.SQLITE_URL }} -o ${{ env.SQLITE_SRC_ZIP }}
+                unzip ${{ env.SQLITE_SRC_ZIP }}
+                SRC_DIR=$(grep -o 'sqlite-src-[0-9]*')
+                echo "SRC_DIR=$SRC_DIR" >> $GITHUB_ENV
+                
+                cd $SRC_DIR
+                ./configure --enable-fts3 --enable-all --enable-update-limit --disable-tcl
+                make amalgamation-tarball
+                
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                name: ${{ env.OUTPUT_DIR }}
+                path: ${{ env.$SRC_DIR }}/${{ env.OUTPUT_DIR }}
+                
