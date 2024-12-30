@@ -19,7 +19,7 @@ jobs:
               shell: bash
               run: |
                 curl -s https://sqlite.org/download.html > download.html
-                SQLITE_SRC_ZIP=$(cat download.html | grep -o '[0-9]*\/sqlite-src-[0-9]*\.zip' | head -1)
+                SQLITE_SRC_ZIP=$(cat download.html | grep -o 'sqlite-src-[0-9]*\.zip' | head -1)
                 SQLITE_URL=${{ env.SQLITE_PAGE }}/$SQLITE_SRC_ZIP
                 INT_VER=$(cat download.html | grep -o 'sqlite-src-[0-9]*\.zip' | head -1 | grep -o '[0-9]*')
                 OUTPUT_DIR=sqlite-amalgamation-$INT_VER
