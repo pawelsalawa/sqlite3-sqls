@@ -12,6 +12,9 @@ on:
             required: true
             type: number
 
+permissions:
+  actions: read
+
 jobs:
     build:
         runs-on: ubuntu-20.04
@@ -32,7 +35,7 @@ jobs:
                 echo "Downloading $ZIP_NAME from $URL"
                 curl -s -L -o $ZIP_NAME $URL
                 ls -l
-                cat $ZIP_NAME
+                #cat $ZIP_NAME
                 
-                unzip $ZIP_NAME
-                ls -l
+                #unzip $ZIP_NAME
+                #ls -l
