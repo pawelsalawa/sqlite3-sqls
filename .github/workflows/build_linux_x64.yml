@@ -20,6 +20,7 @@ jobs:
             - name: Download Amalgamation
               shell: bash
               run: |
+                set -x
                 URL=$(curl -s -L \
                     -H "Accept: application/vnd.github+json" \
                     -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
@@ -30,6 +31,8 @@ jobs:
                 ZIP_NAME=sqlite-amalgamation-${{ inputs.INT_VER }}.zip
                 echo "Downloading $ZIP_NAME from $URL"
                 curl -s -L -o $ZIP_NAME $URL
+                ls -l
+                cat $ZIP_NAME
                 
                 unzip $ZIP_NAME
                 ls -l
