@@ -70,6 +70,7 @@ jobs:
                 
                 OUTPUT_DIR=sqlite3-linux-x64-${{ inputs.INT_VER }}
                 echo "OUTPUT_DIR=$OUTPUT_DIR" >> $GITHUB_ENV
+                mkdir $OUTPUT_DIR
                 cp libsqlite3.so sqlite3 sqlite3.h sqlite3ext.h $OUTPUT_DIR/
                 
             - name: Upload artifact
