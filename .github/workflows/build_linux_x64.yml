@@ -1,7 +1,8 @@
 name: Binaries - Linux x64
 
-repository_dispatch:
-    types: [bin_linux_x64]
+on:
+    repository_dispatch:
+        types: [bin_linux_x64]
 
 jobs:
     build:
