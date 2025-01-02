@@ -211,6 +211,7 @@ jobs:
                 ls -l
                 
                 payload="{\"tag_name\":\"v${{ env.SQLITE_VERSION }}\",\"name\":\"v${{ env.SQLITE_VERSION }}\",\"body\":\"Based on SQLite3 v${{ env.SQLITE_VERSION }}. Please find artifacts to download below.\",\"draft\":true}"
+                echo "Payload: $payload"
                 resp=$(
                     curl -L \
                       -X POST \
@@ -220,9 +221,12 @@ jobs:
                       https://api.github.com/repos/pawelsalawa/sqlite3-sqls/releases \
                       -d $payload
                   )
+                echo "Resp:"
+                echo $resp
                 releaseid=$(echo $resp | jq '.id')
+                echo "releaseid: $releaseid"
                 
-                for file in *
+                for file in ./*
                 do
                     echo "Uploading $file..."
                     curl -L \
