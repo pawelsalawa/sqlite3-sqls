@@ -1,7 +1,7 @@
-name: Binaries - Linux x64
+name: Binaries - Windows x86
 
 env:
-    output_basename: sqlite3-linux-x64
+    output_basename: sqlite3-windows-x86
     compilation_options: |
                     -DSQLITE_ENABLE_UPDATE_DELETE_LIMIT \
                     -DSQLITE_ENABLE_DBSTAT_VTAB \
@@ -30,9 +30,15 @@ on:
 
 jobs:
     build:
-        runs-on: ubuntu-20.04
+        runs-on: windows-2019
 
         steps:
+            - name: Set up MinGW
+              uses: egor-tensin/setup-mingw@v2
+              with:
+                platform: x86
+                version: 8.1.0
+
             - name: Download Amalgamation
               shell: bash
               run: |
@@ -54,18 +60,14 @@ jobs:
                 unzip $ZIP_NAME
                 ls -l
 
-                gcc sqlite3.c -lpthread -ldl -lm -Os -fpic -shared -o libsqlite3.so ${{ env.compilation_options }}
-                gcc shell.c sqlite3.c -lpthread -ldl -lm -Os -fpic -o sqlite3 ${{ env.compilation_options }}
+                gcc sqlite3.c -Os -fpic -DWIN32 -m32 -I. -shared -o sqlite3.dll ${{ env.compilation_options }}
+                gcc shell.c sqlite3.c -Os -fpic -DWIN32 -m32 -I. -o sqlite3.exe ${{ env.compilation_options }}
                 ls -l
 
-                strip libsqlite3.so
-                strip sqlite3
-                ls -l
-                
                 OUTPUT_DIR=${{ env.output_basename }}-${{ inputs.INT_VER }}
                 echo "OUTPUT_DIR=$OUTPUT_DIR" >> $GITHUB_ENV
                 mkdir $OUTPUT_DIR
-                cp libsqlite3.so sqlite3 sqlite3.h sqlite3ext.h $OUTPUT_DIR/
+                cp sqlite3.dll sqlite3.exe sqlite3.h sqlite3ext.h $OUTPUT_DIR/
                 
             - name: Upload artifact
               uses: actions/upload-artifact@v4

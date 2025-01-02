@@ -1,6 +1,7 @@
 name: Binaries - Windows x64
 
 env:
+    output_basename: sqlite3-windows-x64
     compilation_options: |
                     -DSQLITE_ENABLE_UPDATE_DELETE_LIMIT \
                     -DSQLITE_ENABLE_DBSTAT_VTAB \
@@ -45,7 +46,7 @@ jobs:
                         | jq -r '.artifacts[0].archive_download_url'
                     )
                     
-                ZIP_NAME=sqlite-amalgamation-${{ inputs.INT_VER }}.zip
+                ZIP_NAME=sqlite3-amalgamation-${{ inputs.INT_VER }}.zip
                 echo "Downloading $ZIP_NAME from $URL"
                 curl -s -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o $ZIP_NAME $URL
                 ls -l
@@ -57,7 +58,7 @@ jobs:
                 gcc shell.c sqlite3.c -Os -fpic -DWIN64 -m64 -I. -o sqlite3.exe ${{ env.compilation_options }}
                 ls -l
 
-                OUTPUT_DIR=sqlite3-windows-x64-${{ inputs.INT_VER }}
+                OUTPUT_DIR=${{ env.output_basename }}-${{ inputs.INT_VER }}
                 echo "OUTPUT_DIR=$OUTPUT_DIR" >> $GITHUB_ENV
                 mkdir $OUTPUT_DIR
                 cp sqlite3.dll sqlite3.exe sqlite3.h sqlite3ext.h $OUTPUT_DIR/

@@ -1,7 +1,7 @@
-name: Binaries - Linux x64
+name: Binaries - MacOS ARM
 
 env:
-    output_basename: sqlite3-linux-x64
+    output_basename: sqlite3-macos-arm
     compilation_options: |
                     -DSQLITE_ENABLE_UPDATE_DELETE_LIMIT \
                     -DSQLITE_ENABLE_DBSTAT_VTAB \
@@ -54,8 +54,8 @@ jobs:
                 unzip $ZIP_NAME
                 ls -l
 
-                gcc sqlite3.c -lpthread -ldl -lm -Os -fpic -shared -o libsqlite3.so ${{ env.compilation_options }}
-                gcc shell.c sqlite3.c -lpthread -ldl -lm -Os -fpic -o sqlite3 ${{ env.compilation_options }}
+                gcc sqlite3.c -arch arm64 -mmacosx-version-min=11 -lpthread -ldl -lm -Os -fpic -shared -o libsqlite3.so ${{ env.compilation_options }}
+                gcc shell.c sqlite3.c -arch arm64 -mmacosx-version-min=11 -lpthread -ldl -lm -Os -fpic -o sqlite3 ${{ env.compilation_options }}
                 ls -l
 
                 strip libsqlite3.so
