@@ -76,7 +76,8 @@ jobs:
             - name: Trigger binary build workflows
               shell: bash
               run: |
-                payload="{\"inputs\":{\"INT_VER\":${{ env.INT_VER }},\"PARENT_RUN_ID\":${{ github.run_id }}},\"ref\":\"main\"}"
+                payload="{\"inputs\":{\"INT_VER\":\"${{ env.INT_VER }}\",\"PARENT_RUN_ID\":\"${{ github.run_id }}}\",\"ref\":\"main\"}"
+                echo $payload
                 #for wid in "build_linux_x64.yml"
                 #do
                     wid=build_linux_x64.yml
