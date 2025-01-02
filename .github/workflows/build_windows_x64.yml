@@ -36,12 +36,14 @@ jobs:
               shell: bash
               run: |
                 set -x
-                URL=$(curl -s -L \
-                    -H "Accept: application/vnd.github+json" \
-                    -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                    -H "X-GitHub-Api-Version: 2022-11-28" \
-                    https://api.github.com/repos/pawelsalawa/sqlite3-sqls/actions/artifacts?name=sqlite-amalgamation-${{ inputs.INT_VER }} \
-                    | jq -r '.artifacts[] | select(.workflow_run.id == ${{ inputs.PARENT_RUN_ID }}) | .archive_download_url')
+                URL=$(
+                    curl -s -L \
+                        -H "Accept: application/vnd.github+json" \
+                        -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                        -H "X-GitHub-Api-Version: 2022-11-28" \
+                        https://api.github.com/repos/pawelsalawa/sqlite3-sqls/actions/runs/${{ inputs.PARENT_RUN_ID }}/artifacts \
+                        | jq -r '.artifacts[0].archive_download_url'
+                    )
                     
                 ZIP_NAME=sqlite-amalgamation-${{ inputs.INT_VER }}.zip
                 echo "Downloading $ZIP_NAME from $URL"
