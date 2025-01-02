@@ -102,14 +102,16 @@ jobs:
                 wid_list=()
                 for wname in ${{ env.WORKFLOWS }}
                 do
-                    wid_list+=( $(
+                    resp=$(
                             curl -L \
                               -H "Accept: application/vnd.github+json" \
                               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                               -H "X-GitHub-Api-Version: 2022-11-28" \
-                              https://api.github.com/repos/pawelsalawa/sqlite3-sqls/actions/workflows/$wname/runs?created=\>$created_dt | jq '.workflow_runs[0].id' \
-                              -d $payload
-                        ) )
+                              https://api.github.com/repos/pawelsalawa/sqlite3-sqls/actions/workflows/$wname/runs?created=\>$created_dt
+                          )
+                    id=$(echo $resp | jq '.workflow_runs[0].id')
+                    echo "Workflow ID for workflow $wname: $id"
+                    wid_list+=( $id )
                 done
                 
                 echo "Workflow IDs to wait for: ${wid_list[@]}"
