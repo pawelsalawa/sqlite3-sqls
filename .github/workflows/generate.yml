@@ -212,8 +212,8 @@ jobs:
               working-directory: assets
               run: |
                 set -x
-                body="Based on SQLite3 v${{ env.SQLITE_VERSION }}. Please find artifacts to download below."
-                payload="{\"tag_name\":\"v${{ env.SQLITE_VERSION }}\",\"name\":\"v${{ env.SQLITE_VERSION }}\",\"body\":\"$body\",\"draft\":true}"
+                #body="Based on SQLite3 v${{ env.SQLITE_VERSION }}. Please find artifacts to download below."
+                payload="{\"tag_name\":\"v${{ env.SQLITE_VERSION }}\",\"name\":\"v${{ env.SQLITE_VERSION }}\",\"body\":\"\",\"draft\":true}"
                 curl -s -L \
                       -X POST \
                       -H "Accept: application/vnd.github+json" \
