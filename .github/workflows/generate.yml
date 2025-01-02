@@ -126,6 +126,7 @@ jobs:
                 for wid in ${wid_list[@]}
                 do
                     echo "Waiting for ID: $wid"
+                    url=https://api.github.com/repos/pawelsalawa/sqlite3-sqls/actions/runs/$wid
                     it=1
                     total_it=20
                     status=""
@@ -134,12 +135,13 @@ jobs:
                         echo "Iteration $it/$total_it..."
                         it=$((it + 1))
 
+                        
                         resp=$(
                                 curl -s -L \
                                   -H "Accept: application/vnd.github+json" \
                                   -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                                   -H "X-GitHub-Api-Version: 2022-11-28" \
-                                  https://api.github.com/repos/pawelsalawa/sqlite3-sqls/actions/workflows/$wname/runs/$wid
+                                  $url
                             )
                         echo "Response:"
                         echo $resp
@@ -148,7 +150,7 @@ jobs:
                         echo "Status: $status, result: $result"
                         if [ "$status" == "completed" ] && [ "$result" != "success" ]
                         then
-                            echo "Child build has failed: https://github.com/pawelsalawa/sqlite3-sqls/actions/runs/$wid"
+                            echo "Child build has failed: $url"
                             exit 1
                         fi
 
@@ -162,9 +164,9 @@ jobs:
                     
                     if [ $success -eq 1 ]
                     then
-                        echo "Child build $wid finished successfully."
+                        echo "Child build $url finished successfully."
                     else
-                        echo "Child build $wid failed."
+                        echo "Child build $url failed."
                         exit 1
                     fi
                 done
