@@ -23,7 +23,7 @@ jobs:
                 SQLITE_SRC_ZIP=$(cat download.html | grep -o 'sqlite-src-[0-9]*\.zip' | head -1)
                 SQLITE_URL=${{ env.SQLITE_PAGE }}/$(cat download.html | grep -o '[0-9]*\/sqlite-src-[0-9]*\.zip' | head -1)
                 INT_VER=$(echo $SQLITE_SRC_ZIP | grep -o '[0-9]*')
-                OUTPUT_DIR=sqlite-amalgamation-$INT_VER
+                OUTPUT_DIR=sqlite3-amalgamation-$INT_VER
                 
                 NUM0=${INT_VER:0:1}
                 NUM1=${INT_VER:1:2}
@@ -237,7 +237,7 @@ jobs:
                 cd ..
                 
                 echo "Assets uploaded. Publishing release."
-                payload="{"draft":false}"
+                payload="{\"draft\":false}"
                 resp=$(
                     curl -L \
                       -X PATCH \
