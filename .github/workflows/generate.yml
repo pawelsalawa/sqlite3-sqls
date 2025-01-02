@@ -46,13 +46,29 @@ jobs:
                 echo "SQLITE_URL=$SQLITE_URL" >> $GITHUB_ENV
                 echo "SQLITE_SRC_ZIP=$SQLITE_SRC_ZIP" >> $GITHUB_ENV
                 echo "OUTPUT_DIR=$OUTPUT_DIR" >> $GITHUB_ENV
+                
+            - name: Check for release existance
+              shell: bash
+              run: |
+                latest_release_name=$(curl -s -L https://api.github.com/repos/${{ github.repository }}releases/latest | jq -raw '.name')
+                aimed_name="v${{ env.SQLITE_VERSION }}"
+                if [ "$aimed_name" == "$latest_release_name" ]
+                then
+                    echo "Release $aimed_name exists. Skipping the run."
+                    echo "RELEASE_EXISTS=true" >> $GITHUB_ENV
+                else
+                    echo "Release $aimed_name does not exists. Proceeding."
+                    echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
+                fi
 
             - name: Install prerequisities
+              if: env.RELEASE_EXISTS == 'false'
               shell: bash
               run: |
                 sudo apt install autoconf automake libtool
 
             - name: Build Amalgamation
+              if: env.RELEASE_EXISTS == 'false'
               shell: bash
               run: |
                 set -x
@@ -69,12 +85,14 @@ jobs:
                 cp ${{ env.OUTPUT_FILES }} ${{ env.OUTPUT_DIR }}/
                 
             - name: Upload artifact
+              if: env.RELEASE_EXISTS == 'false'
               uses: actions/upload-artifact@v4
               with:
                 name: ${{ env.OUTPUT_DIR }}
                 path: ${{ env.SRC_DIR }}/${{ env.OUTPUT_DIR }}
 
             - name: Trigger binary build workflows
+              if: env.RELEASE_EXISTS == 'false'
               shell: bash
               run: |
                 CHILD_CREATION_DT=$(date +%Y-%m-%dT%H:%M:%S)
@@ -92,10 +110,12 @@ jobs:
                 echo "CHILD_CREATION_DT=$CHILD_CREATION_DT" >> $GITHUB_ENV
 
             - name: Wait a bit for workflows creation
+              if: env.RELEASE_EXISTS == 'false'
               shell: bash
               run: sleep 5
                 
             - name: Wait for workflows to complete
+              if: env.RELEASE_EXISTS == 'false'
               shell: bash
               run: |
                 rid_list=()
@@ -171,6 +191,7 @@ jobs:
                 echo "All child workflows finished successfully."
 
             - name: Download created artifacts
+              if: env.RELEASE_EXISTS == 'false'
               shell: bash
               run: |
                 echo "test: ${{ env.CHILD_IDS }}"
@@ -197,6 +218,7 @@ jobs:
                 ls -l
             
             - name: Amalgamation archive for assets
+              if: env.RELEASE_EXISTS == 'false'
               shell: bash
               run: |
                 assets_dir=$(pwd)/assets
@@ -208,6 +230,7 @@ jobs:
                 ls -l
 
             - name: Create release
+              if: env.RELEASE_EXISTS == 'false'
               shell: bash
               working-directory: assets
               run: |
@@ -230,6 +253,7 @@ jobs:
                 echo "RELEASE_ID=$releaseid" >> $GITHUB_ENV
                 
             - name: Upload assets
+              if: env.RELEASE_EXISTS == 'false'
               shell: bash
               working-directory: assets
               run: |
@@ -248,6 +272,7 @@ jobs:
                 done
                 
             - name: Publish the release
+              if: env.RELEASE_EXISTS == 'false'
               shell: bash
               working-directory: assets
               run: |
