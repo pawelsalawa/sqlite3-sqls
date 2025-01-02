@@ -199,7 +199,7 @@ jobs:
             - name: Release
               shell: bash
               run: |
-                zip -j assets/${{ env.OUTPUT_DIR }}.zip ${{ env.OUTPUT_DIR }}/*
+                zip assets/${{ env.OUTPUT_DIR }}.zip ${{ env.OUTPUT_FILES }}
                 echo "Assets including amalgamation:"
                 ls -l
                 
