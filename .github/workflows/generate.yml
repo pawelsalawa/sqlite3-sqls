@@ -110,8 +110,6 @@ jobs:
                               -H "X-GitHub-Api-Version: 2022-11-28" \
                               $url
                           )
-                    echo "Response:"
-                    echo $resp
                     id=$(echo $resp | jq '.workflow_runs[0].id')
                     echo "Workflow ID for workflow $wname: $id"
                     if [ "$id" == "null" ]
@@ -121,8 +119,10 @@ jobs:
                     fi
                     wid_list+=( $id )
                 done
+                echo "CHILD_IDS=\"${wid_list[@]}\"" >> $GITHUB_ENV
                 
                 echo "Workflow IDs to wait for: ${wid_list[@]}"
+                success=0
                 for wid in ${wid_list[@]}
                 do
                     echo "Waiting for ID: $wid"
@@ -141,8 +141,11 @@ jobs:
                                   -H "X-GitHub-Api-Version: 2022-11-28" \
                                   https://api.github.com/repos/pawelsalawa/sqlite3-sqls/actions/workflows/$wname/runs/$wid
                             )
-                        status=$(echo $resp | jq '.status')
-                        result=$(echo $resp | jq '.conclusion')
+                        echo "Response:"
+                        echo $resp
+                        status=$(echo $resp | jq -r '.status')
+                        result=$(echo $resp | jq -r '.conclusion')
+                        echo "Status: $status, result: $result"
                         if [ "$status" == "completed" ] && [ "$result" != "success" ]
                         then
                             echo "Child build has failed: https://github.com/pawelsalawa/sqlite3-sqls/actions/runs/$wid"
@@ -152,13 +155,21 @@ jobs:
                         if [ "$status" != "completed" ]
                         then
                             sleep 30
+                        else
+                            success=1
                         fi
                     done
-                    echo "Child build $wid finished successfully."
+                    
+                    if [ $success -eq 1 ]
+                    then
+                        echo "Child build $wid finished successfully."
+                    else
+                        echo "Child build $wid failed."
+                        exit 1
+                    fi
                 done
                 
                 echo "All child workflows finished successfully."
-                echo "CHILD_IDS=\"${wid_list[@]}\"" >> $GITHUB_ENV
 
             - name: Create release
               shell: bash
