@@ -234,7 +234,7 @@ jobs:
               working-directory: assets
               run: |
                 set -x
-                for file in ./*
+                for file in *
                 do
                     echo "Uploading $file..."
                     curl -s -L \
@@ -243,7 +243,7 @@ jobs:
                       -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                       -H "X-GitHub-Api-Version: 2022-11-28" \
                       -H "Content-Type: application/octet-stream" \
-                      https://api.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }}/assets \
+                      https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }}/assets \
                       --data-binary "@$file"
                 done
                 
