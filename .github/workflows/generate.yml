@@ -195,13 +195,18 @@ jobs:
                 
                 echo "Downloaded files:"
                 ls -l
+            
+            - name: Amalgamation archive for assets
+              shell: bash
+              run: |
+                assets_dir=$(pwd)/assets
+                cd ${{ env.SRC_DIR }}/${{ env.OUTPUT_DIR }}
+                zip $assets_dir/${{ env.OUTPUT_DIR }}.zip *
 
             - name: Release
               shell: bash
               run: |
-                echo "Files for zip:"
-                ls -l
-                zip assets/${{ env.OUTPUT_DIR }}.zip ${{ env.OUTPUT_FILES }}
+                cd assets
                 echo "Assets including amalgamation:"
                 ls -l
                 
@@ -217,7 +222,6 @@ jobs:
                   )
                 releaseid=$(echo $resp | jq '.id')
                 
-                cd assets
                 for file in *
                 do
                     echo "Uploading $file..."
