@@ -8,8 +8,8 @@ name: Generate Amalgamation
 on:
     workflow_dispatch:
         inputs:
-#    schedule:
-#        - cron: '30 3 * * 1' # run at 3:30 AM UTC every Monday
+    schedule:
+        - cron: '30 * * * *' # run every hour, half past an hour - if there is no release, the action is bery quick
  
 jobs:
     build:
@@ -50,7 +50,6 @@ jobs:
             - name: Check for release existance
               shell: bash
               run: |
-                set -x
                 aimed_name="v${{ env.SQLITE_VERSION }}"
                 resp=$(curl -s -L https://api.github.com/repos/${{ github.repository }}/releases/tags/$aimed_name)
                 result_name=$(echo $resp | jq -r '.name')
