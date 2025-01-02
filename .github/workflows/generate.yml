@@ -210,9 +210,10 @@ jobs:
                 echo "Assets including amalgamation:"
                 ls -l
                 
-                payload="{\"tag_name\":\"v${{ env.SQLITE_VERSION }}\",\"name\":\"v${{ env.SQLITE_VERSION }}\",\"body\":\"Based on SQLite3 v${{ env.SQLITE_VERSION }}. Please find artifacts to download below.\",\"draft\":true}"
-                echo "Payload: $payload"
                 set -x
+                body="Based on SQLite3 v${{ env.SQLITE_VERSION }}. Please find artifacts to download below."
+                payload="{\"tag_name\":\"v${{ env.SQLITE_VERSION }}\",\"name\":\"v${{ env.SQLITE_VERSION }}\",\"body\":\"$body\",\"draft\":true}"
+                echo "Payload: $payload"
                 resp=$(
                     curl -s -L \
                       -X POST \
