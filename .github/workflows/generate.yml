@@ -54,7 +54,7 @@ jobs:
                 aimed_name="v${{ env.SQLITE_VERSION }}"
                 resp=$(curl -s -L https://api.github.com/repos/${{ github.repository }}/releases/tags/$aimed_name)
                 result_name=$(echo $resp | jq -r '.name')
-                if [ "$aimed_name" == "$latest_release_name" ]
+                if [ "$aimed_name" == "$result_name" ]
                 then
                     echo "Release $aimed_name exists. Skipping the run."
                     echo "RELEASE_EXISTS=true" >> $GITHUB_ENV
