@@ -212,7 +212,7 @@ jobs:
                 
                 set -x
                 body="Based on SQLite3 v${{ env.SQLITE_VERSION }}. Please find artifacts to download below."
-                payload="{\"tag_name\":\"v${{ env.SQLITE_VERSION }}\",\"name\":\"v${{ env.SQLITE_VERSION }}\",\"body\":\"$body\",\"draft\":true}"
+                payload="{\"tag_name\":\"v${{ env.SQLITE_VERSION }}\",\"name\":\"v${{ env.SQLITE_VERSION }}\",\"body\":\"\",\"draft\":true}"
                 echo "Payload: $payload"
                 resp=$(
                     curl -s -L \
@@ -244,7 +244,8 @@ jobs:
                 cd ..
                 
                 echo "Assets uploaded. Publishing release."
-                payload="{\"draft\":false}"
+                body="Based on SQLite3 v${{ env.SQLITE_VERSION }}. Please find artifacts to download below."
+                payload="{\"draft\":false,\"body\":\"$body\"}"
                 resp=$(
                     curl -L \
                       -X PATCH \
