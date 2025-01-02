@@ -50,8 +50,8 @@ jobs:
             - name: Check for release existance
               shell: bash
               run: |
-                latest_release_name=$(curl -s -L https://api.github.com/repos/${{ github.repository }}releases/latest | jq -r '.name')
                 aimed_name="v${{ env.SQLITE_VERSION }}"
+                result_name=$(curl -s -L https://api.github.com/repos/${{ github.repository }}/releases/tags/$aimed_name | jq -r '.name')
                 if [ "$aimed_name" == "$latest_release_name" ]
                 then
                     echo "Release $aimed_name exists. Skipping the run."
