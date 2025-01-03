@@ -91,7 +91,7 @@ jobs:
             - name: Build extensions package
               if: env.RELEASE_EXISTS == 'false'
               shell: bash
-              working-directory: env.SRC_DIR
+              working-directory: ${{ env.SRC_DIR }}
               run: |
                 mkdir ${{ env.EXT_OUTPUT_DIR }}
                 cd ext
