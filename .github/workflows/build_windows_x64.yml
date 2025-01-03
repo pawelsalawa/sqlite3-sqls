@@ -65,8 +65,10 @@ jobs:
             - name: Download Amalgamation
               shell: bash
               run: |
-                mkdir amalgamation
-                cd amalgamation
+                SRC_DIR=amalgamation
+                mkdir $SRC_DIR
+                cd $SRC_DIR
+                echo "SRC_DIR=$(pwd)" >> $GITHUB_ENV
                 
                 ZIP_NAME=sqlite3-amalgamation-${{ inputs.INT_VER }}.zip
                 echo "Downloading $ZIP_NAME from $AMALGAMATION_URL"
@@ -78,7 +80,7 @@ jobs:
 
             - name: Compile SQLite3
               shell: bash
-              working-directory: amalgamation
+              working-directory: ${{ env.SRC_DIR }}
               run: |
                 gcc sqlite3.c -Os -fpic -DWIN64 -m64 -I. -shared -o sqlite3.dll ${{ env.compilation_options }}
                 gcc shell.c sqlite3.c -Os -fpic -DWIN64 -m64 -I. -o sqlite3.exe ${{ env.compilation_options }}
@@ -110,7 +112,7 @@ jobs:
                 EXT_BIN=.output
                 mkdir $EXT_BIN
                 
-                FLAGS="-shared -Os -fpic -DWIN64 -m64 -I../../include -L../../lib -lsqlite3"
+                FLAGS="-shared -Os -fpic -DWIN64 -m64 -I$SRC_DIR -L$OUTPUT_DIR -lsqlite3"
                 set -x
                 for f in compress sqlar; do
                     gcc misc/$f.c -Imisc $FLAGS -lzlib1 -o $EXT_BIN/$f.dll
