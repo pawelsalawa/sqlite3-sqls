@@ -80,8 +80,8 @@ jobs:
 
             - name: Compile SQLite3
               shell: bash
-              working-directory: ${{ env.SRC_DIR }}
               run: |
+                cd $SRC_DIR
                 gcc sqlite3.c -Os -fpic -DWIN64 -m64 -I. -shared -o sqlite3.dll ${{ env.compilation_options }}
                 gcc shell.c sqlite3.c -Os -fpic -DWIN64 -m64 -I. -o sqlite3.exe ${{ env.compilation_options }}
                 ls -l
