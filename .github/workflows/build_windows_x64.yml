@@ -43,6 +43,7 @@ jobs:
                 echo "OUTPUT_NAME=$OUTPUT_NAME" >> $GITHUB_ENV
                 echo "OUTPUT_DIR=$OUTPUT_DIR" >> $GITHUB_ENV
                 mkdir $OUTPUT_DIR
+                mkdir ext
               
             - name: Fetch artifact URLs
               shell: bash
@@ -79,6 +80,7 @@ jobs:
               shell: bash
               working-directory: amalgamation
               run: |
+                echo "Comp opts: $compilation_options"
                 gcc sqlite3.c -Os -fpic -DWIN64 -m64 -I. -shared -o sqlite3.dll $compilation_options
                 gcc shell.c sqlite3.c -Os -fpic -DWIN64 -m64 -I. -o sqlite3.exe $compilation_options
                 ls -l
@@ -96,14 +98,8 @@ jobs:
 
             - name: Compile SQLite3 extensions
               shell: bash
+              working-directory: ext
               run: |
-                mkdir ext
-                cd ext
-                mkdir .output
-                cd .output
-                OUT_DIR=$(pwd)
-                cd ..
-                
                 ZIP_NAME=sqlite3-ext-${{ inputs.INT_VER }}.zip
                 echo "Downloading $ZIP_NAME from $EXT_URL"
                 curl -s -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o $ZIP_NAME $EXT_URL
@@ -112,26 +108,28 @@ jobs:
                 unzip $ZIP_NAME
                 ls -l
                 
+                EXT_BIN=.output
+                mkdir $EXT_BIN
+                
                 FLAGS="-shared -Os -fpic -DWIN64 -m64 -I../../include -L../../lib -lsqlite3"
                 set -x
                 for f in compress sqlar; do
-                    gcc misc/$f.c -Imisc $FLAGS -lzlib1 -o $OUT_DIR/$f.dll
+                    gcc misc/$f.c -Imisc $FLAGS -lzlib1 -o $EXT_BIN/$f.dll
                 done
                 
                 for f in csv decimal eval ieee754 percentile rot13 series uint uuid zorder; do
-                    gcc misc/$f.c -Imisc $FLAGS -o $OUT_DIR/$f.dll
+                    gcc misc/$f.c -Imisc $FLAGS -o $EXT_BIN/$f.dll
                 done
                 for f in icu; do
-                    gcc icu/$f.c -I$ICU_DIR/include -L$ICU_DIR/lib -licuio -licuin -licuuc -licudt $FLAGS -o $OUT_DIR/$f.dll
+                    gcc icu/$f.c -I$ICU_DIR/include -L$ICU_DIR/lib -licuio -licuin -licuuc -licudt $FLAGS -o $EXT_BIN/$f.dll
                 done
                 set +x
                 
                 cd $ICU_DIR/bin
-                cp libicuio$ICU_VER.dll libicuin$ICU_VER.dll libicuuc$ICU_VER.dll libicudt$ICU_VER.dll $OUT_DIR
+                cp libicuio$ICU_VER.dll libicuin$ICU_VER.dll libicuuc$ICU_VER.dll libicudt$ICU_VER.dll $EXT_BIN
                 
-                cd $OUT_DIR
+                cd $EXT_BIN
                 ls -l
-                
                 mkdir $OUTPUT_DIR/ext
                 cp -R * $OUTPUT_DIR/ext
                 
