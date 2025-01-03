@@ -29,6 +29,7 @@ jobs:
                 SQLITE_URL=${{ env.SQLITE_PAGE }}/$(cat download.html | grep -o '[0-9]*\/sqlite-src-[0-9]*\.zip' | head -1)
                 INT_VER=$(echo $SQLITE_SRC_ZIP | grep -o '[0-9]*')
                 OUTPUT_DIR=sqlite3-amalgamation-$INT_VER
+                EXT_OUTPUT_DIR=sqlite3-extensions-src-$INT_VER
                 SQLITE_VERSION=$(. scripts/convert_int_ver.sh $INT_VER)
 
                 echo "Version INT: $INT_VER"
@@ -40,6 +41,7 @@ jobs:
                 echo "SQLITE_URL=$SQLITE_URL" >> $GITHUB_ENV
                 echo "SQLITE_SRC_ZIP=$SQLITE_SRC_ZIP" >> $GITHUB_ENV
                 echo "OUTPUT_DIR=$OUTPUT_DIR" >> $GITHUB_ENV
+                echo "EXT_OUTPUT_DIR=$EXT_OUTPUT_DIR" >> $GITHUB_ENV
                 
             - name: Check for release existance
               shell: bash
@@ -86,6 +88,22 @@ jobs:
                 name: ${{ env.OUTPUT_DIR }}
                 path: ${{ env.SRC_DIR }}/${{ env.OUTPUT_DIR }}
                 
+            - name: Build extensions package
+              if: env.RELEASE_EXISTS == 'false'
+              shell: bash
+              working-directory: ${{ env.SRC_DIR }}
+              run: |
+                mkdir ${{ env.EXT_OUTPUT_DIR }}
+                cd ext
+                cp -R * ../${{ env.EXT_OUTPUT_DIR }}/
+
+            - name: Upload extensions artifact
+              if: env.RELEASE_EXISTS == 'false'
+              uses: actions/upload-artifact@v4
+              with:
+                name: ${{ env.EXT_OUTPUT_DIR }}
+                path: ${{ env.SRC_DIR }}/${{ env.EXT_OUTPUT_DIR }}
+
             - name: Trigger binary build workflows
               if: env.RELEASE_EXISTS == 'false'
               shell: bash
@@ -222,6 +240,18 @@ jobs:
 
                 cd $assets_dir
                 echo "Assets including amalgamation:"
+                ls -l
+                
+            - name: Extensions archive for assets
+              if: env.RELEASE_EXISTS == 'false'
+              shell: bash
+              run: |
+                assets_dir=$(pwd)/assets
+                cd ${{ env.SRC_DIR }}/${{ env.EXT_OUTPUT_DIR }}
+                zip -r $assets_dir/${{ env.EXT_OUTPUT_DIR }}.zip *
+
+                cd $assets_dir
+                echo "Assets including extensions:"
                 ls -l
 
             - name: Create release
