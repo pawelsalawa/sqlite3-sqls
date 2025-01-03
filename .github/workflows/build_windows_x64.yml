@@ -15,6 +15,8 @@ env:
                     -DSQLITE_ENABLE_JSON1 \
                     -DSQLITE_ENABLE_RTREE \
                     -DSQLITE_ENABLE_MATH_FUNCTIONS
+    ICU_URL: https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-icu-72.1-1-any.pkg.tar.zst
+    ICU_VER: '72'
 
 on:
     workflow_dispatch:
@@ -33,39 +35,108 @@ jobs:
         runs-on: windows-2019
 
         steps:
+            - name: Prepare
+              shell: bash
+              run: |
+                OUTPUT_NAME=$output_basename-${{ inputs.INT_VER }}
+                OUTPUT_DIR=$(pwd)/$OUTPUT_NAME
+                echo "OUTPUT_NAME=$OUTPUT_NAME" >> $GITHUB_ENV
+                echo "OUTPUT_DIR=$OUTPUT_DIR" >> $GITHUB_ENV
+                mkdir $OUTPUT_DIR
+              
+            - name: Fetch artifact URLs
+              shell: bash
+              run: |
+                resp=$(
+                        curl -s -L \
+                            -H "Accept: application/vnd.github+json" \
+                            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                            -H "X-GitHub-Api-Version: 2022-11-28" \
+                            https://api.github.com/repos/pawelsalawa/sqlite3-sqls/actions/runs/${{ inputs.PARENT_RUN_ID }}/artifacts
+                    )
+                
+                AMALGAMATION_URL=$(echo $resp | jq -r '.artifacts[] | select(.name | startswith("sqlite3-amalgamation")) | .archive_download_url')
+                EXT_URL=$(echo $resp | jq -r '.artifacts[] | select(.name | startswith("sqlite3-ext")) | .archive_download_url')
+                
+                echo "AMALGAMATION_URL=$AMALGAMATION_URL" >> $GITHUB_ENV
+                echo "EXT_URL=$EXT_URL" >> $GITHUB_ENV
+              
             - name: Download Amalgamation
               shell: bash
               run: |
-                set -x
-                URL=$(
-                    curl -s -L \
-                        -H "Accept: application/vnd.github+json" \
-                        -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                        -H "X-GitHub-Api-Version: 2022-11-28" \
-                        https://api.github.com/repos/pawelsalawa/sqlite3-sqls/actions/runs/${{ inputs.PARENT_RUN_ID }}/artifacts \
-                        | jq -r '.artifacts[0].archive_download_url'
-                    )
-                    
+                mkdir amalgamation
+                cd amalgamation
+                
                 ZIP_NAME=sqlite3-amalgamation-${{ inputs.INT_VER }}.zip
-                echo "Downloading $ZIP_NAME from $URL"
-                curl -s -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o $ZIP_NAME $URL
+                echo "Downloading $ZIP_NAME from $AMALGAMATION_URL"
+                curl -s -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o $ZIP_NAME $AMALGAMATION_URL
+                ls -l
+
+                unzip $ZIP_NAME
+                ls -l
+
+            - name: Compile SQLite3
+              shell: bash
+              working-directory: amalgamation
+              run: |
+                gcc sqlite3.c -Os -fpic -DWIN64 -m64 -I. -shared -o sqlite3.dll $compilation_options
+                gcc shell.c sqlite3.c -Os -fpic -DWIN64 -m64 -I. -o sqlite3.exe $compilation_options
+                ls -l
+                
+                cp sqlite3.dll sqlite3.exe sqlite3.h sqlite3ext.h $OUTPUT_DIR/
+                
+            - name: Install extension dependencies
+              shell: bash
+              run: |
+                cd ..
+                curl -L "$ICU_URL" | tar -xf - --zstd
+                mv mingw64 icu
+                cd icu
+                echo "ICU_DIR=$(pwd)" >> $GITHUB_ENV
+
+            - name: Compile SQLite3 extensions
+              shell: bash
+              run: |
+                mkdir ext
+                cd ext
+                mkdir .output
+                cd .output
+                OUT_DIR=$(pwd)
+                cd ..
+                
+                ZIP_NAME=sqlite3-ext-${{ inputs.INT_VER }}.zip
+                echo "Downloading $ZIP_NAME from $EXT_URL"
+                curl -s -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o $ZIP_NAME $EXT_URL
                 ls -l
                 
                 unzip $ZIP_NAME
                 ls -l
-
-                gcc sqlite3.c -Os -fpic -DWIN64 -m64 -I. -shared -o sqlite3.dll ${{ env.compilation_options }}
-                gcc shell.c sqlite3.c -Os -fpic -DWIN64 -m64 -I. -o sqlite3.exe ${{ env.compilation_options }}
-                ls -l
-
-                OUTPUT_DIR=${{ env.output_basename }}-${{ inputs.INT_VER }}
-                echo "OUTPUT_DIR=$OUTPUT_DIR" >> $GITHUB_ENV
-                mkdir $OUTPUT_DIR
-                cp sqlite3.dll sqlite3.exe sqlite3.h sqlite3ext.h $OUTPUT_DIR/
                 
-            - name: Upload artifact
+                FLAGS="-shared -Os -fpic -DWIN64 -m64 -I../../include -L../../lib -lsqlite3"
+                set -x
+                for f in compress sqlar; do
+                    gcc misc/$f.c -Imisc $FLAGS -lzlib1 -o $OUT_DIR/$f.dll
+                done
+                
+                for f in csv decimal eval ieee754 percentile rot13 series uint uuid zorder; do
+                    gcc misc/$f.c -Imisc $FLAGS -o $OUT_DIR/$f.dll
+                done
+                for f in icu; do
+                    gcc icu/$f.c -I$ICU_DIR/include -L$ICU_DIR/lib -licuio -licuin -licuuc -licudt $FLAGS -o $OUT_DIR/$f.dll
+                done
+                set +x
+                
+                cd $ICU_DIR/bin
+                cp libicuio$ICU_VER.dll libicuin$ICU_VER.dll libicuuc$ICU_VER.dll libicudt$ICU_VER.dll $OUT_DIR
+                
+                cd $OUT_DIR
+                ls -l
+                
+                mkdir $OUTPUT_DIR/ext
+                cp -R * $OUTPUT_DIR/ext
+                
+            - name: Upload SQLite3 artifact
               uses: actions/upload-artifact@v4
               with:
                 name: ${{ env.OUTPUT_DIR }}
                 path: ${{ env.OUTPUT_DIR }}
-
