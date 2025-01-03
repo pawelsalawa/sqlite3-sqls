@@ -80,9 +80,8 @@ jobs:
               shell: bash
               working-directory: amalgamation
               run: |
-                echo "Comp opts: $compilation_options"
-                gcc sqlite3.c -Os -fpic -DWIN64 -m64 -I. -shared -o sqlite3.dll $compilation_options
-                gcc shell.c sqlite3.c -Os -fpic -DWIN64 -m64 -I. -o sqlite3.exe $compilation_options
+                gcc sqlite3.c -Os -fpic -DWIN64 -m64 -I. -shared -o sqlite3.dll ${{ env.compilation_options }}
+                gcc shell.c sqlite3.c -Os -fpic -DWIN64 -m64 -I. -o sqlite3.exe ${{ env.compilation_options }}
                 ls -l
                 
                 cp sqlite3.dll sqlite3.exe sqlite3.h sqlite3ext.h $OUTPUT_DIR/
