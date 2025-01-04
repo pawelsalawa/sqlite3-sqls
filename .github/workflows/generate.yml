@@ -148,12 +148,10 @@ jobs:
               if: env.RELEASE_EXISTS == 'false'
               shell: bash
               run: |
-                echo "test: ${{ env.CHILD_IDS }}"
-                
                 mkdir assets
                 cd assets
 
-                for runid in "${{ env.CHILD_IDS }}"
+                for runid in ${{ env.CHILD_IDS }}
                 do
                     $SCRIPTS/download_artifact.sh $runid
                 done
@@ -203,7 +201,7 @@ jobs:
                 for file in *
                 do
                     echo "Uploading $file..."
-                    $SCRIPTS/upload_artifact.sh $RELEASE_ID $file
+                    $SCRIPTS/upload_artifact.sh $RELEASE_ID "$file"
                 done
                 
             - name: Publish the release
