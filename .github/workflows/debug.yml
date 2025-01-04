@@ -52,11 +52,9 @@ jobs:
             - name: Create release
               shell: bash
               run: |
-                #body="Based on SQLite3 v$SQLITE_VERSION. Please find artifacts to download below."
-                body="Simple description"
+                body="Based on SQLite3 v$SQLITE_VERSION. Please find artifacts to download below."
                 payload="{\"tag_name\":\"v$SQLITE_VERSION\",\"name\":\"v$SQLITE_VERSION\",\"body\":\"$body\",\"draft\":true}"
-                echo $payload > ../release_payload.json
-                releaseid=$($SCRIPTS/create_draft_release.sh ../release_payload.json)
+                releaseid=$($SCRIPTS/create_draft_release.sh "$payload")
                 echo "RELEASE_ID: $releaseid"
                 echo "RELEASE_ID=$releaseid" >> $GITHUB_ENV
                 
