@@ -25,6 +25,7 @@ jobs:
               run: |
                 echo "REPO=${{ github.repository }}" >> $GITHUB_ENV
                 echo "TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
+                chmod +x scripts/*.sh
 
             - name: Check latest version
               shell: bash
@@ -35,7 +36,7 @@ jobs:
                 INT_VER=$(echo $SQLITE_SRC_ZIP | grep -o '[0-9]*')
                 OUTPUT_DIR=sqlite3-amalgamation-$INT_VER
                 EXT_OUTPUT_DIR=sqlite3-extensions-src-$INT_VER
-                SQLITE_VERSION=$(. scripts/convert_int_ver.sh $INT_VER)
+                SQLITE_VERSION=$(scripts/convert_int_ver.sh $INT_VER)
 
                 echo "Version INT: $INT_VER"
                 echo "Version: $SQLITE_VERSION"
@@ -117,30 +118,11 @@ jobs:
                 payload="{\"inputs\":{\"INT_VER\":\"${{ env.INT_VER }}\",\"PARENT_RUN_ID\":\"${{ github.run_id }}\"},\"ref\":\"main\"}"
                 for wname in ${{ env.WORKFLOWS }}
                 do
-                    run_id=$(. scripts/run_workflow.sh $wname $payload)
+                    run_id=$(scripts/run_workflow.sh $wname $payload)
                     run_ids+=( $run_id )
                 done
                 echo "CHILD_IDS=\"${run_ids[@]}\"" >> $GITHUB_ENV
-                
-                # CHILD_CREATION_DT=$(date +%Y-%m-%dT%H:%M:%S)
-                 # payload="{\"inputs\":{\"INT_VER\":\"${{ env.INT_VER }}\",\"PARENT_RUN_ID\":\"${{ github.run_id }}\"},\"ref\":\"main\"}"
-                 # for wname in ${{ env.WORKFLOWS }}
-                 # do
-                    # curl -L \
-                      # -X POST \
-                      # -H "Accept: application/vnd.github+json" \
-                      # -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                      # -H "X-GitHub-Api-Version: 2022-11-28" \
-                      # https://api.github.com/repos/${{ github.repository }}/actions/workflows/$wname/dispatches \
-                      # -d $payload
-                 # done
-                # echo "CHILD_CREATION_DT=$CHILD_CREATION_DT" >> $GITHUB_ENV
 
-            #- name: Wait a bit for workflows creation
-            #  if: env.RELEASE_EXISTS == 'false'
-            #  shell: bash
-            #  run: sleep 5
-                
             - name: Wait for workflows to complete
               if: env.RELEASE_EXISTS == 'false'
               shell: bash
@@ -149,7 +131,7 @@ jobs:
                 success=0
                 for runid in $CHILD_IDS
                 do
-                    success=$(. scripts/wait_for_run.sh $runid 5)
+                    success=$(scripts/wait_for_run.sh $runid 5)
                     if [ $success -eq 1 ]
                     then
                         echo "Child build $url finished successfully."
@@ -159,78 +141,6 @@ jobs:
                     fi
                 done
                 echo "All child workflows finished successfully."
-              
-                # rid_list=()
-                # for wname in ${{ env.WORKFLOWS }}
-                # do
-                    # url=https://api.github.com/repos/${{ github.repository }}/actions/workflows/$wname/runs?created=\>${{ env.CHILD_CREATION_DT }}
-                    # echo "Querying workflow ID from URL: $url"
-                    # resp=$(
-                            # curl -s -L \
-                              # -H "Accept: application/vnd.github+json" \
-                              # -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                              # -H "X-GitHub-Api-Version: 2022-11-28" \
-                              # $url
-                          # )
-                    # id=$(echo $resp | jq '.workflow_runs[0].id')
-                    # echo "Run ID for workflow $wname: $id"
-                    # if [ "$id" == "null" ]
-                    # then
-                        # echo "Null Run ID for $wname."
-                        # exit 1
-                    # fi
-                    # rid_list+=( $id )
-                # done
-                # echo "CHILD_IDS=\"${rid_list[@]}\"" >> $GITHUB_ENV
-                
-                # echo "Workflow IDs to wait for: ${rid_list[@]}"
-                # success=0
-                # for runid in ${rid_list[@]}
-                # do
-                    # echo "Waiting for ID: $runid"
-                    # url=https://api.github.com/repos/${{ github.repository }}/actions/runs/$runid
-                    # status=""
-                    # total_it=20
-                    # it=1
-                    # while [ "$status" != "completed" ] && [ $it -le $total_it ]
-                    # do
-                        # echo "Iteration $it/$total_it..."
-                        # it=$((it + 1))
-                        
-                        # resp=$(
-                                # curl -s -L \
-                                  # -H "Accept: application/vnd.github+json" \
-                                  # -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                                  # -H "X-GitHub-Api-Version: 2022-11-28" \
-                                  # $url
-                            # )
-                        # status=$(echo $resp | jq -r '.status')
-                        # result=$(echo $resp | jq -r '.conclusion')
-                        # echo "Status: $status, result: $result"
-                        # if [ "$status" == "completed" ] && [ "$result" != "success" ]
-                        # then
-                            # echo "Child build has failed: $url"
-                            # exit 1
-                        # fi
-
-                        # if [ "$status" != "completed" ]
-                        # then
-                            # sleep 30
-                        # else
-                            # success=1
-                        # fi
-                    # done
-                    
-                    # if [ $success -eq 1 ]
-                    # then
-                        # echo "Child build $url finished successfully."
-                    # else
-                        # echo "Child build $url failed."
-                        # exit 1
-                    # fi
-                # done
-                
-                # echo "All child workflows finished successfully."
 
             - name: Download created artifacts
               if: env.RELEASE_EXISTS == 'false'
@@ -244,16 +154,7 @@ jobs:
                 for rid in "${{ env.CHILD_IDS }}"
                 do
                     echo "Downloading artifact from $rid"
-                    . scripts/download_artifact.sh $runid
-                    # URL=$(curl -s -L \
-                        # -H "Accept: application/vnd.github+json" \
-                        # -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                        # -H "X-GitHub-Api-Version: 2022-11-28" \
-                        # https://api.github.com/repos/${{ github.repository }}/actions/runs/$rid/artifacts \
-                        # | jq -r '.artifacts[0].archive_download_url')
-                        
-                    # echo "Download URL for $rid: $URL"
-                    # curl -O -J -s -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" $URL
+                    scripts/download_artifact.sh $runid
                     echo "Done."
                 done
                 
@@ -289,23 +190,9 @@ jobs:
               shell: bash
               working-directory: assets
               run: |
-                #set -x
                 #body="Based on SQLite3 v${{ env.SQLITE_VERSION }}. Please find artifacts to download below."
                 payload="{\"tag_name\":\"v${{ env.SQLITE_VERSION }}\",\"name\":\"v${{ env.SQLITE_VERSION }}\",\"body\":\"\",\"draft\":true}"
-                # curl -s -L \
-                      # -X POST \
-                      # -H "Accept: application/vnd.github+json" \
-                      # -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                      # -H "X-GitHub-Api-Version: 2022-11-28" \
-                      # https://api.github.com/repos/${{ github.repository }}/releases \
-                      # -d $payload > ../release_resp.json
-                # resp=$(cat ../release_resp.json)
-                # set +x
-                # echo "Resp:"
-                # echo $resp
-                # releaseid=$(echo $resp | jq '.id')
-                
-                releaseid=$(. scripts/create_draft_release.sh $payload
+                releaseid=$(../scripts/create_draft_release.sh $payload
                 echo "RELEASE_ID: $releaseid"
                 echo "RELEASE_ID=$releaseid" >> $GITHUB_ENV
                 
@@ -317,15 +204,7 @@ jobs:
                 for file in *
                 do
                     echo "Uploading $file..."
-                    . scripts/upload_artifact.sh $RELEASE_ID $file
-                    # curl -s -L \
-                      # -X POST \
-                      # -H "Accept: application/vnd.github+json" \
-                      # -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                      # -H "X-GitHub-Api-Version: 2022-11-28" \
-                      # -H "Content-Type: application/octet-stream" \
-                      # https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }}/assets?name=$file \
-                      # --data-binary "@$file"
+                    ../scripts/upload_artifact.sh $RELEASE_ID $file
                 done
                 
             - name: Publish the release
@@ -333,13 +212,4 @@ jobs:
               shell: bash
               working-directory: assets
               run: |
-                . scripts/publish_release.sh $RELEASE_ID
-                # payload="{\"draft\":false}"
-                # set -x
-                # curl -s -L \
-                  # -X PATCH \
-                  # -H "Accept: application/vnd.github+json" \
-                  # -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                  # -H "X-GitHub-Api-Version: 2022-11-28" \
-                  # https://api.github.com/repos/${{ github.repository }}/releases/${{ env.RELEASE_ID }} \
-                  # -d $payload
+                ../scripts/publish_release.sh $RELEASE_ID
