@@ -29,6 +29,7 @@ do
           )
     run_id=$(echo $resp | jq '.workflow_runs[0].id')
     it=$((it + 1))
+    sleep 1
 done
 
 echo "Run ID for workflow $WORKFLOW: $run_id" >&2
