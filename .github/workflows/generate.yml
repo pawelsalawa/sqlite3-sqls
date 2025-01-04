@@ -190,7 +190,8 @@ jobs:
               shell: bash
               working-directory: assets
               run: |
-                body="Based on SQLite3 v$SQLITE_VERSION. Please find artifacts to download below."
+                #body="Based on SQLite3 v$SQLITE_VERSION. Please find artifacts to download below."
+                body="Simple description"
                 payload="{\"body\":\"$body\",\"tag_name\":\"v$SQLITE_VERSION\",\"name\":\"v$SQLITE_VERSION\",\"draft\":true}"
                 echo $payload > ../release_payload.json
                 releaseid=$($SCRIPTS/create_draft_release.sh ../release_payload.json)
