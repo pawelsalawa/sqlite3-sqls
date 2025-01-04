@@ -19,7 +19,7 @@ SECS=0
 INTERVAL=15
 while [ "$status" != "completed" ] && [ $SECS -le $TOTAL_SECS ] && [ $finished -eq 0 ]
 do
-    printf "Iteration %02d:%02d / %02d:%02d\n" $((SECS / 60)) $((SECS % 60) $((TOTAL_SECS / 60)) $((TOTAL_SECS % 60))) >&2
+    printf "Iteration %02d:%02d / %02d:%02d\n" $((SECS / 60)) $((SECS % 60)) $((TOTAL_SECS / 60)) $((TOTAL_SECS % 60)) >&2
     SECS=$((SECS + INTERVAL))
     
     resp=$(
