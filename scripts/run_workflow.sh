@@ -3,6 +3,8 @@
 WORKFLOW=$1
 PAYLOAD=$2
 
+child_dt=$(date -d 'now - 5 seconds' +%Y-%m-%dT%H:%M:%S)
+
 curl -s -L \
   -X POST \
   -H "Accept: application/vnd.github+json" \
@@ -11,9 +13,7 @@ curl -s -L \
   https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW/dispatches \
   -d $PAYLOAD
 
-child_dt=$(date +%Y-%m-%dT%H:%M:%S)
 sleep 1
-
 url=https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW/runs?created=\>$child_dt
 
 run_id="null"
