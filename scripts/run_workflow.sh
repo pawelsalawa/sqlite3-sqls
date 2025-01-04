@@ -11,7 +11,9 @@ curl -s -L \
   https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW/dispatches \
   -d $PAYLOAD
 
-child_dt=$(date -d 'now - 5 seconds' +%Y-%m-%dT%H:%M:%S)
+child_dt=$(date +%Y-%m-%dT%H:%M:%S)
+sleep 3
+
 url=https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW/runs?created=\>$child_dt
 resp=$(
         curl -s -L \
@@ -24,7 +26,7 @@ run_id=$(echo $resp | jq '.workflow_runs[0].id')
 echo "Run ID for workflow $WORKFLOW: $run_id" >&2
 if [ "$run_id" == "null" ]
 then
-    echo "Null Run ID for $wname." >&2
+    echo "Null Run ID for $WORKFLOW." >&2
     exit 1
 fi
 echo $run_id
