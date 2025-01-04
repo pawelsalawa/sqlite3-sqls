@@ -12,7 +12,7 @@ curl -s -L \
   -d $PAYLOAD
 
 child_dt=$(date +%Y-%m-%dT%H:%M:%S)
-sleep 3
+sleep 1
 
 url=https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW/runs?created=\>$child_dt
 

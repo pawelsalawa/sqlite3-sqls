@@ -154,7 +154,7 @@ jobs:
                 for rid in "${{ env.CHILD_IDS }}"
                 do
                     echo "Downloading artifact from $rid"
-                    scripts/download_artifact.sh $runid
+                    ../scripts/download_artifact.sh $runid
                     echo "Done."
                 done
                 
