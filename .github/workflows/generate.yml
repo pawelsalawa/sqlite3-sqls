@@ -121,7 +121,7 @@ jobs:
                     run_id=$(scripts/run_workflow.sh $wname $payload)
                     run_ids+=( $run_id )
                 done
-                echo "CHILD_IDS=\"${run_ids[@]}\"" >> $GITHUB_ENV
+                echo "CHILD_IDS=${run_ids[@]}" >> $GITHUB_ENV
 
             - name: Wait for workflows to complete
               if: env.RELEASE_EXISTS == 'false'
