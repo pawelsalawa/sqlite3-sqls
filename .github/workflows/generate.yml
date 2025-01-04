@@ -190,9 +190,9 @@ jobs:
               shell: bash
               working-directory: assets
               run: |
-                #body="Based on SQLite3 v${{ env.SQLITE_VERSION }}. Please find artifacts to download below."
-                payload="{\"tag_name\":\"v${{ env.SQLITE_VERSION }}\",\"name\":\"v${{ env.SQLITE_VERSION }}\",\"body\":\"\",\"draft\":true}"
-                releaseid=$($SCRIPTS/create_draft_release.sh $payload
+                body="Based on SQLite3 v${{ env.SQLITE_VERSION }}. Please find artifacts to download below."
+                payload="{\"tag_name\":\"v${{ env.SQLITE_VERSION }}\",\"name\":\"v${{ env.SQLITE_VERSION }}\",\"body\":\"$body\",\"draft\":true}"
+                releaseid=$($SCRIPTS/create_draft_release.sh $payload)
                 echo "RELEASE_ID: $releaseid"
                 echo "RELEASE_ID=$releaseid" >> $GITHUB_ENV
                 
