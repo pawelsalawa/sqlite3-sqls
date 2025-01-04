@@ -36,23 +36,20 @@ do
     echo "Status: $status, Result: $result" >&2
     if [ "$status" == "completed" ] && [ "$result" != "success" ]
     then
-        echo "Run has failed: $RUN_ID"
-        finished=1
+        echo "Run $RUN_ID failed." >&2
+        echo 0
+        exit 0
     else
         if [ "$status" != "completed" ]
         then
             sleep 15
         else
-            finished=1
-            success=1
+            echo "Run $RUN_ID finished successfully." >&2
+            echo 1
+            exit 0
         fi
     fi
 done
 
-if [ $success -eq 1 ]
-then
-    echo "Run $RUN_ID finished successfully." >&2
-else
-    echo "Run $RUN_ID failed." >&2
-fi
-echo $success
+echo "Run $RUN_ID failed." >&2
+echo 0
