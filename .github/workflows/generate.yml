@@ -16,9 +16,10 @@ jobs:
         runs-on: ubuntu-20.04
 
         steps:
-            - name: Clone repo for scripts
+            - name: Clone GH scripts
               uses: actions/checkout@v3
               with:
+                repository: pawelsalawa/gh-action-scripts
                 ref: main
 
             - name: Set environment variables for scripts
