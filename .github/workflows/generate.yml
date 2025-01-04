@@ -26,6 +26,7 @@ jobs:
                 echo "REPO=${{ github.repository }}" >> $GITHUB_ENV
                 echo "TOKEN=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_ENV
                 chmod +x scripts/*.sh
+                echo "SCRIPTS=$(pwd)/scripts" >> $GITHUB_ENV
 
             - name: Check latest version
               shell: bash
@@ -36,7 +37,7 @@ jobs:
                 INT_VER=$(echo $SQLITE_SRC_ZIP | grep -o '[0-9]*')
                 OUTPUT_DIR=sqlite3-amalgamation-$INT_VER
                 EXT_OUTPUT_DIR=sqlite3-extensions-src-$INT_VER
-                SQLITE_VERSION=$(scripts/convert_int_ver.sh $INT_VER)
+                SQLITE_VERSION=$($SCRIPTS/convert_int_ver.sh $INT_VER)
 
                 echo "Version INT: $INT_VER"
                 echo "Version: $SQLITE_VERSION"
@@ -118,7 +119,7 @@ jobs:
                 payload="{\"inputs\":{\"INT_VER\":\"${{ env.INT_VER }}\",\"PARENT_RUN_ID\":\"${{ github.run_id }}\"},\"ref\":\"main\"}"
                 for wname in ${{ env.WORKFLOWS }}
                 do
-                    run_id=$(scripts/run_workflow.sh $wname $payload)
+                    run_id=$($SCRIPTS/run_workflow.sh $wname $payload)
                     run_ids+=( $run_id )
                 done
                 echo "CHILD_IDS=${run_ids[@]}" >> $GITHUB_ENV
@@ -131,12 +132,12 @@ jobs:
                 success=0
                 for runid in $CHILD_IDS
                 do
-                    success=$(scripts/wait_for_run.sh $runid 5)
+                    success=$($SCRIPTS/wait_for_run.sh $runid 5)
                     if [ $success -eq 1 ]
                     then
-                        echo "Child build $url finished successfully."
+                        echo "Child build $runid finished successfully."
                     else
-                        echo "Child build $url failed."
+                        echo "Child build $runid failed."
                         exit 1
                     fi
                 done
@@ -151,11 +152,9 @@ jobs:
                 mkdir assets
                 cd assets
 
-                for rid in "${{ env.CHILD_IDS }}"
+                for runid in "${{ env.CHILD_IDS }}"
                 do
-                    echo "Downloading artifact from $rid"
-                    ../scripts/download_artifact.sh $runid
-                    echo "Done."
+                    $SCRIPTS/download_artifact.sh $runid
                 done
                 
                 echo "Downloaded files:"
@@ -192,7 +191,7 @@ jobs:
               run: |
                 #body="Based on SQLite3 v${{ env.SQLITE_VERSION }}. Please find artifacts to download below."
                 payload="{\"tag_name\":\"v${{ env.SQLITE_VERSION }}\",\"name\":\"v${{ env.SQLITE_VERSION }}\",\"body\":\"\",\"draft\":true}"
-                releaseid=$(../scripts/create_draft_release.sh $payload
+                releaseid=$($SCRIPTS/create_draft_release.sh $payload
                 echo "RELEASE_ID: $releaseid"
                 echo "RELEASE_ID=$releaseid" >> $GITHUB_ENV
                 
@@ -204,7 +203,7 @@ jobs:
                 for file in *
                 do
                     echo "Uploading $file..."
-                    ../scripts/upload_artifact.sh $RELEASE_ID $file
+                    $SCRIPTS/upload_artifact.sh $RELEASE_ID $file
                 done
                 
             - name: Publish the release
@@ -212,4 +211,4 @@ jobs:
               shell: bash
               working-directory: assets
               run: |
-                ../scripts/publish_release.sh $RELEASE_ID
+                $SCRIPTS/publish_release.sh $RELEASE_ID
