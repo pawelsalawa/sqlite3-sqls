@@ -11,7 +11,8 @@ curl -s -L \
   https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW/dispatches \
   -d $PAYLOAD
 
-url=https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW/runs
+child_dt=$(date -d 'now - 5 seconds' +%Y-%m-%dT%H:%M:%S)
+url=https://api.github.com/repos/$REPO/actions/workflows/$WORKFLOW/runs?created=\>$child_dt
 resp=$(
         curl -s -L \
           -H "Accept: application/vnd.github+json" \
