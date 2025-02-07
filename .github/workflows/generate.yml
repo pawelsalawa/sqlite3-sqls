@@ -2,6 +2,7 @@ env:
     SQLITE_PAGE: https://sqlite.org
     OUTPUT_FILES: sqlite3.c sqlite3.h sqlite3ext.h shell.c
     WORKFLOWS: build_linux_x64.yml build_windows_x64.yml build_windows_x86.yml build_macos_x64.yml build_macos_arm.yml
+    BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
  
 name: Generate Amalgamation
 
@@ -198,7 +199,7 @@ jobs:
               working-directory: assets
               run: |
                 body="Based on SQLite3 v$SQLITE_VERSION. Please find artifacts for download below."
-                releaseid=$($SCRIPTS/create_draft_release.sh "v$SQLITE_VERSION" "v$SQLITE_VERSION" "$body")
+                releaseid=$($SCRIPTS/create_draft_release.sh "v$SQLITE_VERSION" "$BRANCH_NAME" "v$SQLITE_VERSION" "$body")
                 echo "RELEASE_ID: $releaseid"
                 echo "RELEASE_ID=$releaseid" >> $GITHUB_ENV
                 
