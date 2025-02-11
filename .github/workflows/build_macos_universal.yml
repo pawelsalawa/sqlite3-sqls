@@ -1,7 +1,7 @@
 name: Binaries - MacOS Universal
 
 env:
-    output_basename: sqlite3-macos-arm
+    output_basename: sqlite3-macos-universal
     compilation_options: |
                     -DSQLITE_ENABLE_UPDATE_DELETE_LIMIT \
                     -DSQLITE_ENABLE_DBSTAT_VTAB \
