@@ -1,4 +1,4 @@
-name: Binaries - MacOS ARM
+name: Binaries - MacOS Universal
 
 env:
     output_basename: sqlite3-macos-arm
