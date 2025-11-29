@@ -10,7 +10,7 @@ on:
     workflow_dispatch:
         inputs:
     schedule:
-        - cron: '30 * * * *' # run every hour, half past an hour - if there is no release, the action is bery quick
+        - cron: '30 * * * *' # run every hour, half past an hour - if there is no release, the action is very quick
  
 jobs:
     build:

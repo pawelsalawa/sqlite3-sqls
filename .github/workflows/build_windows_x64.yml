@@ -14,7 +14,9 @@ env:
                     -DSQLITE_ENABLE_GEOPOLY \
                     -DSQLITE_ENABLE_JSON1 \
                     -DSQLITE_ENABLE_RTREE \
-                    -DSQLITE_ENABLE_MATH_FUNCTIONS
+                    -DSQLITE_ENABLE_MATH_FUNCTIONS \
+                    -DSQLITE_ENABLE_PERCENTILE \
+                    -DSQLITE_ENABLE_ORDERED_SET_AGGREGATES
 
 on:
     workflow_dispatch:
