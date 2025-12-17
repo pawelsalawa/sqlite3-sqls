@@ -1,0 +1,103 @@
+name: Binaries - Windows ARM64
+
+env:
+    output_basename: sqlite3-windows-arm64
+    compilation_options: |
+                    -DSQLITE_ENABLE_UPDATE_DELETE_LIMIT \
+                    -DSQLITE_ENABLE_DBSTAT_VTAB \
+                    -DSQLITE_ENABLE_BYTECODE_VTAB \
+                    -DSQLITE_ENABLE_COLUMN_METADATA \
+                    -DSQLITE_ENABLE_EXPLAIN_COMMENTS \
+                    -DSQLITE_ENABLE_FTS3 \
+                    -DSQLITE_ENABLE_FTS4 \
+                    -DSQLITE_ENABLE_FTS5 \
+                    -DSQLITE_ENABLE_GEOPOLY \
+                    -DSQLITE_ENABLE_JSON1 \
+                    -DSQLITE_ENABLE_RTREE \
+                    -DSQLITE_ENABLE_MATH_FUNCTIONS \
+                    -DSQLITE_ENABLE_PERCENTILE \
+                    -DSQLITE_ENABLE_ORDERED_SET_AGGREGATES
+
+on:
+    workflow_dispatch:
+        inputs:
+          INT_VER:
+            description: 'SQLite version as integer'
+            required: true
+            type: number
+          PARENT_RUN_ID:
+            description: 'ID of workflow that created appropriate amalgamation artifact'
+            required: true
+            type: number
+
+jobs:
+    build:
+        runs-on: windows-2022
+
+        steps:
+            - name: Update MSYS2
+              run: |
+                # Update MSYS2
+                C:\msys64\usr\bin\bash -lc 'pacman --noconfirm -Syuu'
+
+            - name: Install compiler and toolchain
+              env:
+                CHERE_INVOKING: yes
+                MSYSTEM: CLANG64
+              shell: C:/msys64/usr/bin/bash.exe -leo pipefail {0}
+              run: |
+                # Install compiler and utilities
+                pacman -S --noconfirm curl jq unzip \
+                  mingw-w64-clang-x86_64-clang \
+                  mingw-w64-clang-x86_64-lld
+
+                # Install ARM64 libraries
+                pacman -S --noconfirm \
+                  mingw-w64-clang-aarch64-compiler-rt \
+                  mingw-w64-clang-aarch64-headers-git \
+                  mingw-w64-clang-aarch64-crt-git \
+                  mingw-w64-clang-aarch64-libunwind \
+                  mingw-w64-clang-aarch64-winpthreads
+
+            - name: Download Amalgamation
+              env:
+                CHERE_INVOKING: yes
+                MSYSTEM: CLANG64
+              shell: C:/msys64/usr/bin/bash.exe -leo pipefail {0}
+              run: |
+                set -x
+                URL=$(
+                    curl -s -L \
+                        -H "Accept: application/vnd.github+json" \
+                        -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                        -H "X-GitHub-Api-Version: 2022-11-28" \
+                        https://api.github.com/repos/pawelsalawa/sqlite3-sqls/actions/runs/${{ inputs.PARENT_RUN_ID }}/artifacts \
+                        | jq -r '.artifacts[0].archive_download_url'
+                    )
+
+                ZIP_NAME=sqlite3-amalgamation-${{ inputs.INT_VER }}.zip
+                echo "Downloading $ZIP_NAME from $URL"
+                curl -s -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -o $ZIP_NAME $URL
+                ls -l
+
+                unzip $ZIP_NAME
+                ls -l
+
+                COMPILER_VERSION=$(clang --version | head -n1 | cut -d' ' -f3 | cut -d'.' -f1)
+
+                clang --target=aarch64-w64-windows-gnu --sysroot=/clangarm64 -resource-dir=/clangarm64/lib/clang/$COMPILER_VERSION \
+                  sqlite3.c -Os -fpic -DWIN64 -m64 -I. -shared -o sqlite3.dll ${{ env.compilation_options }}
+                clang --target=aarch64-w64-windows-gnu --sysroot=/clangarm64 -resource-dir=/clangarm64/lib/clang/$COMPILER_VERSION \
+                  shell.c sqlite3.c -Os -fpic -DWIN64 -m64 -I. -o sqlite3.exe ${{ env.compilation_options }}
+                ls -l
+
+                OUTPUT_DIR=${{ env.output_basename }}-${{ inputs.INT_VER }}
+                echo "OUTPUT_DIR=$OUTPUT_DIR" >> $GITHUB_ENV
+                mkdir $OUTPUT_DIR
+                cp sqlite3.dll sqlite3.exe sqlite3.h sqlite3ext.h $OUTPUT_DIR/
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                name: ${{ env.OUTPUT_DIR }}
+                path: ${{ env.OUTPUT_DIR }}
