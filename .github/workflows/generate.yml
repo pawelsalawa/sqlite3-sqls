@@ -65,10 +65,11 @@ jobs:
                 else
                     echo "Release $aimed_name does not exists. Proceeding."
                     echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
-                    echo "Result name for debug: $result_name"
-                    echo "Full response for debug:"
-                    echo $resp
                 fi
+                echo "Expected name for debug: $result_name"
+                echo "Result name for debug: $result_name"
+                echo "Full response for debug:"
+                echo $resp
 
             - name: Install prerequisities
               if: env.RELEASE_EXISTS == 'false'
