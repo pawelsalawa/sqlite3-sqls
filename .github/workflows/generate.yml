@@ -57,6 +57,12 @@ jobs:
               run: |
                 aimed_name="v${{ env.SQLITE_VERSION }}"
                 resp=$(curl -s -L https://api.github.com/repos/${{ github.repository }}/releases/tags/$aimed_name)
+                errmsg=$(echo $resp | jq -r '.message')
+                if [ "$errmsg" != "" ]
+                then
+                    echo "Failed to query whether release $aimed_name exists. Error details: $errmsg"
+                    exit 1
+                fi
                 result_name=$(echo $resp | jq -r '.name')
                 if [ "$aimed_name" == "$result_name" ]
                 then
