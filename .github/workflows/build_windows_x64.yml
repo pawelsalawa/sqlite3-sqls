@@ -29,6 +29,14 @@ on:
             description: 'ID of workflow that created appropriate amalgamation artifact'
             required: true
             type: number
+          debug_ssh:
+            description: "Open SSH tunnel at the end"
+            type: boolean
+            default: false
+          debug_on_failure:
+            description: "Open SSH tunnel if job fails"
+            type: boolean
+            default: false
 
 jobs:
     build:
@@ -70,3 +78,13 @@ jobs:
               with:
                 name: ${{ env.OUTPUT_DIR }}
                 path: ${{ env.OUTPUT_DIR }}
+
+            - name: Setup debugging SSH
+              if: >
+                ${{
+                    github.repository_owner == 'pawelsalawa'
+                    && (inputs.debug_ssh || (failure() && inputs.debug_on_failure))
+                }}
+              uses: owenthereal/action-upterm@v1
+              with:
+                wait-timeout-minutes: 10
