@@ -86,9 +86,9 @@ jobs:
                 COMPILER_VERSION=$(clang --version | head -n1 | cut -d' ' -f3 | cut -d'.' -f1)
 
                 clang --target=aarch64-w64-windows-gnu --sysroot=/clangarm64 -resource-dir=/clangarm64/lib/clang/$COMPILER_VERSION \
-                  sqlite3.c -Os -fpic -m64 -I. -shared -o sqlite3.dll ${{ env.compilation_options }}
+                  sqlite3.c -Os -municode -m64 -I. -shared -o sqlite3.dll ${{ env.compilation_options }}
                 clang --target=aarch64-w64-windows-gnu --sysroot=/clangarm64 -resource-dir=/clangarm64/lib/clang/$COMPILER_VERSION \
-                  shell.c sqlite3.c -Os -fpic -m64 -I. -o sqlite3.exe ${{ env.compilation_options }}
+                  shell.c sqlite3.c -Os -municode -m64 -I. -o sqlite3.exe ${{ env.compilation_options }}
                 ls -l
 
                 OUTPUT_DIR=${{ env.output_basename }}-${{ inputs.INT_VER }}
