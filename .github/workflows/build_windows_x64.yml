@@ -56,8 +56,8 @@ jobs:
                 unzip $ZIP_NAME
                 ls -l
 
-                gcc sqlite3.c -Os -fpic -DWIN64 -m64 -I. -shared -o sqlite3.dll ${{ env.compilation_options }}
-                gcc shell.c sqlite3.c -Os -fpic -DWIN64 -m64 -I. -o sqlite3.exe ${{ env.compilation_options }}
+                gcc sqlite3.c -Os -fpic -m64 -I. -shared -o sqlite3.dll ${{ env.compilation_options }}
+                gcc shell.c sqlite3.c -Os -fpic -m64 -I. -o sqlite3.exe ${{ env.compilation_options }}
                 ls -l
 
                 OUTPUT_DIR=${{ env.output_basename }}-${{ inputs.INT_VER }}
