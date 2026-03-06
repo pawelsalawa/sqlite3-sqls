@@ -10,7 +10,7 @@ on:
     workflow_dispatch:
         inputs:
     schedule:
-        - cron: '30 * * * *' # run every hour, half past an hour - if there is no release, the action is very quick
+        - cron: '30 2,8,14,20 * * *' # run every 4 hours, half past an hour - if there is no release, the action is very quick
  
 jobs:
     build:
@@ -56,8 +56,14 @@ jobs:
               shell: bash
               run: |
                 aimed_name="v${{ env.SQLITE_VERSION }}"
-                resp=$(curl -s -L https://api.github.com/repos/${{ github.repository }}/releases/tags/$aimed_name)
-                result_name=$(echo $resp | jq -r '.name')
+                resp=$(curl -s -L -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github+json" https://api.github.com/repos/${{ github.repository }}/releases/tags/$aimed_name)
+                errmsg=$(echo $resp | jq -r '.message // empty')
+                if [ "$errmsg" != "" ] && [ "$errmsg" != "Not Found" ]
+                then
+                    echo "Failed to query whether release $aimed_name exists. Error details: $errmsg"
+                    exit 1
+                fi
+                result_name=$(echo $resp | jq -r '.name // empty')
                 if [ "$aimed_name" == "$result_name" ]
                 then
                     echo "Release $aimed_name exists. Skipping the run."
