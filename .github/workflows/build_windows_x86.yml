@@ -63,7 +63,7 @@ jobs:
                 ls -l
 
                 gcc sqlite3.c -Os -municode -m32 -I. -shared -o sqlite3.dll ${{ env.compilation_options }}
-                gcc shell.c sqlite3.c -Os -municode -m32 -I. -o sqlite3.exe ${{ env.compilation_options }}
+                gcc shell.c sqlite3.c -Os -municode -m32 -Wl,-subsystem,console -I. -o sqlite3.exe ${{ env.compilation_options }}
                 ls -l
 
                 OUTPUT_DIR=${{ env.output_basename }}-${{ inputs.INT_VER }}
