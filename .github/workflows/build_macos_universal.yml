@@ -16,7 +16,8 @@ env:
                     -DSQLITE_ENABLE_RTREE \
                     -DSQLITE_ENABLE_MATH_FUNCTIONS \
                     -DSQLITE_ENABLE_PERCENTILE \
-                    -DSQLITE_ENABLE_ORDERED_SET_AGGREGATES
+                    -DSQLITE_ENABLE_ORDERED_SET_AGGREGATES \
+                    -DSQLITE_DQS=1
 
 on:
     workflow_dispatch:
