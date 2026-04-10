@@ -89,7 +89,7 @@ jobs:
                 clang --target=aarch64-w64-windows-gnu --sysroot=/clangarm64 -resource-dir=/clangarm64/lib/clang/$COMPILER_VERSION \
                   sqlite3.c -Os -municode -m64 -I. -shared -o sqlite3.dll ${{ env.compilation_options }}
                 clang --target=aarch64-w64-windows-gnu --sysroot=/clangarm64 -resource-dir=/clangarm64/lib/clang/$COMPILER_VERSION \
-                  shell.c sqlite3.c -Os -municode -m64 -Wl,-subsystem,console -I. -o sqlite3.exe ${{ env.compilation_options }}
+                  shell.c sqlite3.c -Os -m64 -I. -o sqlite3.exe ${{ env.compilation_options }}
                 ls -l
 
                 OUTPUT_DIR=${{ env.output_basename }}-${{ inputs.INT_VER }}
