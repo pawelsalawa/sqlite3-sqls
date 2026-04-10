@@ -17,7 +17,7 @@ env:
                     -DSQLITE_ENABLE_MATH_FUNCTIONS \
                     -DSQLITE_ENABLE_PERCENTILE \
                     -DSQLITE_ENABLE_ORDERED_SET_AGGREGATES \
-                    -DSQLITE_SHELL_IS_UTF8=1
+                    -DSQLITE_DQS=0
 
 on:
     workflow_dispatch:
